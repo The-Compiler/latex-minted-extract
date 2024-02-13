@@ -13,7 +13,7 @@ class Error(Exception):
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--minted-lang", help="Language for minted")
-    parser.add_argument("--minted-opts", help="Options for minted")
+    parser.add_argument("--minted-opts", help="Options for minted", default="")
     parser.add_argument("--highlight", help="Patterns to highlight")
     parser.add_argument("file", help="Source file to read")
     parser.add_argument(
@@ -53,7 +53,7 @@ def main() -> None:
     #print(r"\end{minted}")
 
     with open(args.file) as f:
-        lines = f.readlines()
+        lines = f.read().splitlines()
 
     patterns = args.patterns.split(PATTERN_SEP)
     highlight_patterns = args.highlight.split(PATTERN_SEP)
@@ -69,7 +69,7 @@ def main() -> None:
 
     opts = f"[{','.join(minted_opts)}]" if minted_opts else ""
     print(r"\begin{minted}%s{%s}" % (opts, args.minted_lang))
-    print("".join(output))
+    print("\n".join(output))
     print(r"\end{minted}")
 
 
