@@ -59,18 +59,16 @@ def main() -> None:
     with open(args.file) as f:
         lines = f.read().splitlines()
 
-    patterns = args.patterns.split(PATTERN_SEP)
-    highlight_patterns = args.highlight.split(HIGHLIGHT_SEP)
     minted_opts = args.minted_opts.split(",")
 
-    start, end = match_patterns(lines, patterns)
+    start, end = match_patterns(lines, args.patterns.split(PATTERN_SEP))
     output = lines[start - 1 : end]
 
-    highlight_pairs = [
-        match_patterns(output, patterns.split(PATTERN_SEP))
-        for patterns in highlight_patterns
-    ]
-    if highlight_pairs:
+    if args.highlight:
+        highlight_pairs = [
+            match_patterns(output, patterns.split(PATTERN_SEP))
+            for patterns in args.highlight.split(HIGHLIGHT_SEP)
+        ]
         val = ",".join(f"{start}-{end}" for start, end in highlight_pairs)
         minted_opts.append("highlightlines={%s}" % val)
 
