@@ -37,7 +37,9 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def tokens_to_minted_opts(tokens: list[tuple[int, Token]]) -> Iterator[str]:
+def tokens_to_minted_opts(
+    tokens: list[tuple[int, Token]], snippet: str
+) -> Iterator[str]:
     hl_start = None
     hl_ranges = []
     has_start = False
@@ -72,7 +74,7 @@ def tokens_to_minted_opts(tokens: list[tuple[int, Token]]) -> Iterator[str]:
         yield "highlightlines={%s}" % value
 
     if not has_start or not has_end:
-        raise Error(f"Missing start/end markers: {tokens}")
+        raise Error(f"Missing start/end tokens in {tokens} for {snippet}")
 
 
 def expand_snippet_name(snippet: str) -> Iterator[str]:
@@ -121,13 +123,13 @@ def main() -> None:
             for snippet in expand_snippet_name(snippet_pat):
                 tokens[snippet].append((lineno, token))
 
-    minted_opts += list(tokens_to_minted_opts(tokens[args.snippet]))
+    minted_opts += list(tokens_to_minted_opts(tokens[args.snippet], args.snippet))
 
     if args.show_name:
         name = args.file.relative_to(pathlib.PurePath("code"))
         print(r"\mintinline{python}{# %s}" % name)
 
-    minted_opts_str = ','.join(minted_opts)
+    minted_opts_str = ",".join(minted_opts)
     print(r"\begin{minted}[%s]{%s}" % (minted_opts_str, args.minted_lang))
     print("\n".join(clean_lines))
     print(r"\end{minted}")
