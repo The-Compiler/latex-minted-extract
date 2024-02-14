@@ -47,9 +47,13 @@ def tokens_to_minted_opts(
 
     for lineno, token in tokens:
         if token == Token.START:
+            if has_start:
+                raise Error(f"Multiple start tokens in {tokens} for {snippet}")
             has_start = True
             yield f"firstline={lineno}"
         elif token == Token.END:
+            if has_end:
+                raise Error(f"Multiple end tokens in {tokens} for {snippet}")
             has_end = True
             yield f"lastline={lineno}"
             if hl_start is not None:  # ending snippet ends highlight
