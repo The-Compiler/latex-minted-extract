@@ -3,7 +3,6 @@ import collections
 import argparse
 import pathlib
 import enum
-import re
 import sys
 from typing import Iterator
 
@@ -17,12 +16,6 @@ class Token(enum.Enum):
     HL = "!"
     HL_START = "!<"
     HL_END = "!>"
-    CONTEXT = "..."
-
-
-# e.g.: def func():  #@ ! slide-1
-# ->                       def func():    #@        !                slide-1
-COMMENT_RE = re.compile(rf"(?P<code>.*)\s*{COMMENT}(?P<token>[^ ]*) (?P<snippet>.*)")
 
 
 class Error(Exception):
@@ -61,9 +54,6 @@ def tokens_to_minted_opts(tokens: list[tuple[int, Token]]) -> Iterator[str]:
             assert hl_start is not None
             hl_ranges.append(f"{hl_start}-{lineno}")
             hl_start = None
-        elif token == Token.CONTEXT:
-            # raise Error("Context not supported yet")
-            pass
         else:
             raise Error(f"Unknown token: {token}")
 
