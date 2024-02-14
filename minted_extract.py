@@ -40,18 +40,28 @@ def parse_args() -> argparse.Namespace:
 def tokens_to_minted_opts(tokens: list[tuple[int, Token]]) -> Iterator[str]:
     hl_start = None
     hl_ranges = []
+    has_start = False
+    has_end = False
 
     for lineno, token in tokens:
         if token == Token.START:
+            has_start = True
             yield f"firstline={lineno}"
         elif token == Token.END:
+            has_end = True
             yield f"lastline={lineno}"
+            if hl_start is not None:  # ending snippet ends highlight
+                hl_ranges.append(f"{hl_start}-{lineno}")
+                hl_start = None
         elif token == Token.HL:
             hl_ranges.append(str(lineno))
         elif token == Token.HL_START:
+            if hl_start is not None:
+                raise Error(f"Nested highlight start at line {lineno}")
             hl_start = lineno
         elif token == Token.HL_END:
-            assert hl_start is not None
+            if hl_start is None:
+                raise Error(f"Unmatched highlight end at line {lineno}")
             hl_ranges.append(f"{hl_start}-{lineno}")
             hl_start = None
         else:
@@ -60,6 +70,9 @@ def tokens_to_minted_opts(tokens: list[tuple[int, Token]]) -> Iterator[str]:
     if hl_ranges:
         value = ",".join(hl_ranges)
         yield "highlightlines={%s}" % value
+
+    if not has_start or not has_end:
+        raise Error(f"Missing start/end markers: {tokens}")
 
 
 def expand_snippet_name(snippet: str) -> Iterator[str]:
@@ -100,9 +113,13 @@ def main() -> None:
         code, comment = line.split(COMMENT, 1)
         clean_lines.append(code.rstrip(" "))
         for part in comment.split(";"):
-            token, snippet_pat = part.strip().split(" ", 1)
+            token_str, snippet_pat = part.strip().split(" ", 1)
+            try:
+                token = Token(token_str)
+            except ValueError:
+                raise Error(f"Unknown token: {token_str}")
             for snippet in expand_snippet_name(snippet_pat):
-                tokens[snippet].append((lineno, Token(token)))
+                tokens[snippet].append((lineno, token))
 
     minted_opts += list(tokens_to_minted_opts(tokens[args.snippet]))
 
