@@ -127,7 +127,8 @@ def main() -> None:
             for snippet in expand_snippet_name(snippet_pat):
                 tokens[snippet].append((lineno, token))
 
-    minted_opts += list(tokens_to_minted_opts(tokens[args.snippet], args.snippet))
+    if args.snippet:  # empty arg: full file
+        minted_opts += list(tokens_to_minted_opts(tokens[args.snippet], args.snippet))
 
     if args.show_name:
         name = args.file.relative_to(pathlib.PurePath("code"))
