@@ -132,7 +132,7 @@ def main() -> None:
 
     if args.show_name:
         name = args.file.relative_to(pathlib.PurePath("code"))
-        print(r"\mintinline{python}{# %s}" % name)
+        print(r"\filenameheader{%s}" % name)
 
     minted_opts_str = ",".join(minted_opts)
     print(r"\begin{minted}[%s]{%s}" % (minted_opts_str, args.minted_lang))
