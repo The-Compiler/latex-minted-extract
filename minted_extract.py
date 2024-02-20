@@ -1,4 +1,6 @@
 # Originally inspired by https://tex.stackexchange.com/a/130755
+from __future__ import annotations
+
 import collections
 import argparse
 import pathlib
@@ -95,6 +97,13 @@ def expand_snippet_name(snippet: str) -> Iterator[str]:
         yield prefix + part + suffix
 
 
+def split_line(line: str) -> tuple[str, str | None]:
+    if COMMENT not in line:
+        return line, None
+    code, comment = line.split(COMMENT, 1)
+    return code.rstrip(" "), comment
+
+
 def main() -> None:
     args = parse_args()
     # print(r"\begin{minted}{python}")
@@ -112,12 +121,11 @@ def main() -> None:
     tokens: dict[str, list[tuple[int, Token]]] = collections.defaultdict(list)
 
     for lineno, line in enumerate(lines, start=1):
-        if COMMENT not in line:
-            clean_lines.append(line)
+        code, comment = split_line(line)
+        clean_lines.append(code)
+        if comment is None:
             continue
 
-        code, comment = line.split(COMMENT, 1)
-        clean_lines.append(code.rstrip(" "))
         for part in comment.split(";"):
             token_str, snippet_pat = part.strip().split(" ", 1)
             try:
