@@ -1,6 +1,7 @@
 # Originally inspired by https://tex.stackexchange.com/a/130755
 from __future__ import annotations
 
+import re
 import collections
 import argparse
 import pathlib
@@ -9,15 +10,18 @@ import sys
 from typing import Iterator
 
 
-COMMENT = "#@ "
-
-
 class Token(enum.Enum):
-    START = "<"
-    END = ">"
-    HL = "!"
-    HL_START = "!<"
+    START = "<-"
+    END = "->"
+    HL = "!!"
+    HL_START = "<!"
     HL_END = "!>"
+
+
+TOKEN_PAT = r"|".join(re.escape(token.value) for token in Token)
+COMMENT_RE = re.compile(
+    rf"(?P<code>.*) +# (?P<comment>({TOKEN_PAT}) .*)"
+)
 
 
 class Error(Exception):
@@ -98,10 +102,11 @@ def expand_snippet_name(snippet: str) -> Iterator[str]:
 
 
 def split_line(line: str) -> tuple[str, str | None]:
-    if COMMENT not in line:
+    m = COMMENT_RE.match(line)
+    if m is None:
         return line, None
-    code, comment = line.split(COMMENT, 1)
-    return code.rstrip(" "), comment
+
+    return m.group("code"), m.group("comment")
 
 
 def main() -> None:
@@ -134,6 +139,8 @@ def main() -> None:
                 raise Error(f"Unknown token: {token_str}")
             for snippet in expand_snippet_name(snippet_pat):
                 tokens[snippet].append((lineno, token))
+
+    # print(dict(tokens))
 
     if args.snippet:  # empty arg: full file
         minted_opts += list(tokens_to_minted_opts(tokens[args.snippet], args.snippet))
