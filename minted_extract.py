@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024 Florian Bruhin <me@the-compiler.org>
+#
+# SPDX-License-Identifier: MIT
+
 # Originally inspired by https://tex.stackexchange.com/a/130755
 from __future__ import annotations
 
@@ -19,9 +23,7 @@ class Token(enum.Enum):
 
 
 TOKEN_PAT = r"|".join(re.escape(token.value) for token in Token)
-COMMENT_RE = re.compile(
-    rf"(?P<code>.*) +# (?P<comment>({TOKEN_PAT}) .*)"
-)
+COMMENT_RE = re.compile(rf"(?P<code>.*) +# (?P<comment>({TOKEN_PAT}) .*)")
 
 
 class Error(Exception):
