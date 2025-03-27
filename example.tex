@@ -1,0 +1,14 @@
+\documentclass{beamer}
+
+\usepackage{minted}
+\usepackage{keycommand}
+\newkeycommand{\inputmintedex}[opts=,lang=python,enum showname={false,true,phantom},enum outputtype={slide,code,solution}][2]{%
+    \input|"python 'minted_extract.py' --minted-opts '\commandkey{opts}' --minted-lang '\commandkey{lang}' --show-name '\commandkey{showname}' --output-type '\commandkey{outputtype}' '#1' '#2'"%
+}
+
+\begin{document}
+    \begin{frame}{minted extract demo}
+        \only<1>{\inputmintedex{minted_extract.py}{imports-1}}
+        \only<2>{\inputmintedex{minted_extract.py}{imports-2}}
+    \end{frame}
+\end{document}
